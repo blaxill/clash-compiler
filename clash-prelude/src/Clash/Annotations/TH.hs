@@ -87,6 +87,7 @@ import           Clash.Annotations.TopEntity    ( PortName(..)
                                                 , TopEntity(..)
                                                 )
 import           Clash.NamedTypes
+import qualified Clash.Sized.Vector
 
 $(makeBaseFunctor ''Type)
 
@@ -115,7 +116,7 @@ getTypes (GadtC _ xs _)    = map snd xs
 getTypes (RecGadtC _ xs _) = map (view _3) xs
 
 -- | A template haskell helper function. Get the 'Name' of a 'Con'. These names
--- are only used in type/data family resolution which is best effort, 
+-- are only used in type/data family resolution which is best effort,
 -- so for Gadts we just take the first name.
 getName :: Con -> Name
 getName (NormalC n _)          = n
@@ -177,9 +178,9 @@ nameToPorts seen split name = do
       TyConI (getConstructors -> [x]) ->
         namesFromConstructor seen' split info x
       TyConI (getConstructors -> xs)  ->
-        possibleNamedSum seen split info xs
+        possibleNamedSum seen' split info xs
       DataConI _ (AppT (AppT ArrowT ty) _) _ ->
-        expandFamiliesAndGatherNames seen split ty
+        expandFamiliesAndGatherNames seen' split ty
       PrimTyConI _ _ _ -> return $ Complete []
       _ -> return $ HasFail $ "Unhandled " ++ pprint info ++ "\n"
  where
@@ -223,6 +224,9 @@ expandFamilies (AppTF a b) = do
   a' <- a
   b' <- b
   case unApp (AppT a' b') [] of
+    -- Delete Clash Vec's from the type tree as the elements are type homogenous
+    -- and we don't attempt to provide ordinal prefixes.
+    (ConT x : _ : _ : []) | x == ''Clash.Sized.Vector.Vec -> return (ConT ''())
     (ConT x : xs) -> do
       info <- reify x
       case info of

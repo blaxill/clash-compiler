@@ -156,6 +156,20 @@ expectedTopEntity6 =
     (PortName "out")
 
 
+topEntity7 :: (HiddenClockResetEnable System)
+           => "in1" ::: Signal System (Vec 3 Int)
+           -> "in2" ::: Signal System (Vec 3 Simple)
+           -> "out" ::: Signal System Int
+topEntity7 = undefined
+makeTopEntity 'topEntity7
+
+expectedTopEntity7 :: TopEntity
+expectedTopEntity7 =
+ Synthesize "topEntity7"
+    [PortName "in1", PortName "in2"]
+    (PortName "out")
+
+
 topEntityFailure1
   :: "int"     ::: Signal System Int
   -> "tuple"   ::: ("tup1" ::: Signal System (BitVector 7), "tup2" ::: Signal System (BitVector 9))
@@ -210,6 +224,8 @@ tests =
       $(recover ([| () |]) (buildTopEntity Nothing 'topEntity5)) @?= expectedTopEntity5
     , testCase "topEntity6" $
       $(recover ([| () |]) (buildTopEntity Nothing 'topEntity6)) @?= expectedTopEntity6
+    , testCase "topEntity7" $
+      $(recover ([| () |]) (buildTopEntity Nothing 'topEntity7)) @?= expectedTopEntity7
 
     , testCase "topEntityFailure1" $
       $(recover ([| () |]) (buildTopEntity Nothing 'topEntityFailure1)) @?= ()
