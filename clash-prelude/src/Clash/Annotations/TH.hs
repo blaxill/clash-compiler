@@ -224,7 +224,7 @@ expandFamilies (AppTF a b) = do
   a' <- a
   b' <- b
   case unApp (AppT a' b') [] of
-    -- Delete Clash Vec's from the type tree as the elements are type homogenous
+    -- Delete Clash Vec's from the type tree as the elements are type homogeneous
     -- and we don't attempt to provide ordinal prefixes.
     (ConT x : _ : _ : []) | x == ''Clash.Sized.Vector.Vec -> return (ConT ''())
     (ConT x : xs) -> do
